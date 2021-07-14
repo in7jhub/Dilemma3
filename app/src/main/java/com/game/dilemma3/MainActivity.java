@@ -33,7 +33,7 @@ import android.widget.ImageView;
 
 public class MainActivity extends AppCompatActivity {
     Button fullpageButton;
-    VideoView videoView[] = new VideoView[5];
+    VideoView videoView[] = new VideoView[10];
     ImageView shrinkImg;
     ImageView bg;
     boolean main_loop_visit = true;
@@ -43,27 +43,44 @@ public class MainActivity extends AppCompatActivity {
 
     int iPage = 0;
     boolean bSeq[] = new boolean[10];
-    void InitializeSeq(){
-        for(int i = 0; i < 10; i++){
-            bSeq[i] = false;
+    boolean tb = true;
+
+    void logAll(){
+        boolean visible;
+        if(fullpageButton.getVisibility() == View.VISIBLE){
+            visible = true;
+        } else {
+            visible = false;
         }
-        bSeq[0] = true;
+
+        Log.d("----------","-----------");
+        Log.d("iPage     :  ", Integer.toString(iPage));
+        Log.d("Btn_pres  :  ", Boolean.toString(isFPButtonPressed));
+        Log.d("Btn_show  :  ", Boolean.toString(visible));
     }
-    void startVideo(int iVid, boolean isLoopingVideo){
-        videoView[iVid].setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-            @Override
-            public void onPrepared(MediaPlayer mp) {
-                mp.start();
-                if(isLoopingVideo) {
-                    mp.setLooping(true);
+
+    int timer_vid = 0;
+    boolean playVideo = true;
+    boolean c1 = true;
+    long c1_timer = 0;
+    void controlVideo(boolean state){
+        playVideo = state;
+        if(state){ // pause
+            videoView[0].start();
+            if(c1){
+                c1_timer++;
+                // rewind video every 200sec(200000msec)
+                if(c1_timer > 200000){
+                    videoView[0].seekTo(0);
+                    c1_timer = 0;
                 }
             }
-        });
-        for(int i = 0; i < videoView.length; i++){
-            videoView[i].setVisibility(View.INVISIBLE);
         }
-        videoView[iVid].setVisibility(View.VISIBLE);
+        else if (!state){ // play
+            videoView[0].pause();
+        }
     }
+
     void main_loop() {
         if(main_loop_visit) {
             Handler mainloophandler = new Handler();
@@ -78,7 +95,7 @@ public class MainActivity extends AppCompatActivity {
                                     main_loop_content();
                                 }
                             });
-                            Thread.sleep(5);
+                            Thread.sleep(1);
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
@@ -89,7 +106,6 @@ public class MainActivity extends AppCompatActivity {
             main_loop_visit = false;
         }
     }
-    long timer_vid = 0;
 
     void main_loop_content(){
         //iPage's initial value : 0, increases by 1 as the game progresses.
@@ -98,28 +114,26 @@ public class MainActivity extends AppCompatActivity {
                 //Start a looping video
                 if (bSeq[0]) {
                     //video 'c1'
-                    startVideo(0, true);
                     bSeq[0] = false;
                 }
 
                 //Start button input only once.
                 //Button will be reactivated when the second video is over.
                 if(isFPButtonPressed){
-                    ignoreButton(true);
-                    iPage++;
+//                    ignoreButton(true);
+//                    iPage++;
                 }
                 break;
 
             case 1 :
                 if (bSeq[1]) {
-                    startVideo(1, false);
                     bSeq[1] = false;
                 }
 
                 //Video plays without button interference until timer_vid reaches 100
                 //Timer duration should be same as length of video 'c2'
                 timer_vid++;
-                if(timer_vid == 100) {
+                if(timer_vid == 100){
                     ignoreButton(false);
                 }
 
@@ -134,7 +148,6 @@ public class MainActivity extends AppCompatActivity {
 
             case 2 :
                 if (bSeq[2]){
-                    startVideo(2, false);
                     bSeq[2] = false;
                 }
 
@@ -153,7 +166,6 @@ public class MainActivity extends AppCompatActivity {
 
             case 3 :
                 if (bSeq[3]){
-                    startVideo(3, false);
                     bSeq[3] = false;
                 }
 
@@ -190,35 +202,52 @@ public class MainActivity extends AppCompatActivity {
             case 5 :
                 if(bSeq[5]){
                     //video 'c5'
-                    startVideo(4, false);
                     bSeq[5] = false;
                 }
                 break;
         }
-        isDraggingToLeft = true; // temporarily jump !SHOULD BE SET AS FALSE!
+        logAll();
+        isDraggingToLeft = true; // temporarily jump !SHOULD BE /SET AS FALSE!
         isFPButtonPressed = false;
     }
-
+    void InitializeSeq(){
+        for(int i = 0; i < 10; i++){
+            bSeq[i] = true;
+        }
+    }
     void fetchVideoSrc(){
         videoView[0] = (VideoView) findViewById(R.id.vid1);
-        Uri uri1 = Uri.parse("android.resource://com.game.dilemma2/raw/c1");
+        Uri uri1 = Uri.parse("android.resource://com.game.dilemma3/raw/c2");
         videoView[0].setVideoURI(uri1);
-
-        videoView[1] = (VideoView) findViewById(R.id.vid2);
-        Uri uri2 = Uri.parse("android.resource://com.game.dilemma2/raw/c2");
-        videoView[1].setVideoURI(uri2);
-
-        videoView[2] = findViewById(R.id.vid3);
-        Uri uri3 = Uri.parse("android.resource://com.game.dilemma2/raw/c3");
-        videoView[2].setVideoURI(uri3);
-
-        videoView[3] = (VideoView) findViewById(R.id.vid4);
-        Uri uri4 = Uri.parse("android.resource://com.game.dilemma2/raw/c4");
-        videoView[3].setVideoURI(uri4);
-
-        videoView[4] = (VideoView) findViewById(R.id.vid5);
-        Uri uri5 = Uri.parse("android.resource://com.game.dilemma2/raw/c5");
-        videoView[4].setVideoURI(uri5);
+        videoView[0].setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+            @Override
+            public void onPrepared(MediaPlayer mp) {
+                mp.start();
+                mp.setLooping(true);
+            }
+        });
+//
+//        videoView[1] = (VideoView) findViewById(R.id.vid2);
+//        Uri uri2 = Uri.parse("android.resource://com.game.dilemma3/raw/c2");
+//        videoView[1].setVideoURI(uri2);
+//
+//        videoView[2] = (VideoView) findViewById(R.id.vid3);
+//        Uri uri3 = Uri.parse("android.resource://com.game.dilemma3/raw/c3");
+//        videoView[2].setVideoURI(uri3);
+//
+////        videoView[3] = (VideoView) findViewById(R.id.vid4);
+////        Uri uri4 = Uri.parse("android.resource://com.game.dilemma3/raw/c4");
+////        videoView[3].setVideoURI(uri4);
+//
+//        videoView[4] = (VideoView) findViewById(R.id.vid5);
+//        Uri uri5 = Uri.parse("android.resource://com.game.dilemma3/raw/c5");
+//        videoView[4].setVideoURI(uri5);
+//
+//        videoView[8] = (VideoView) findViewById(R.id.vid4);
+//        Uri uri8 = Uri.parse("android.resource://com.game.dilemma3/raw/c1");
+//        videoView[8].setVideoURI(uri8);
+//        videoView[8].start();
+//        videoView[8].setVisibility(View.VISIBLE);
     }
     void fetchImgSrc(){
         shrinkImg = findViewById(R.id.shrinkImg);
@@ -244,20 +273,10 @@ public class MainActivity extends AppCompatActivity {
         fullpageButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 isFPButtonPressed = true;
+                tb = !tb;
             }
         });
 
-        videoView[0] = (VideoView) findViewById(R.id.vid1);
-        Uri uri1 = Uri.parse("android.resource://com.game.dilemma2/raw/c1");
-        videoView[0].setVideoURI(uri1);
-        videoView[0].setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-            @Override
-            public void onPrepared(MediaPlayer mp) {
-                mp.start();
-                mp.setLooping(true);
-            }
-        });
-        videoView[0].setVisibility(View.VISIBLE);
         main_loop();
     }
 }
